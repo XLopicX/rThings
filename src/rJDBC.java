@@ -1,6 +1,6 @@
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class rJDBC {
     private String hostname;
@@ -34,6 +34,15 @@ public class rJDBC {
         try {
             Statement st = con.createStatement();
             return st.executeQuery(query);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void update(String query) {
+        try {
+            Statement st = con.createStatement();
+            st.executeUpdate(query);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -88,6 +97,50 @@ public class rJDBC {
 
         public String build() {
             return String.format("SELECT %s FROM %s %s %s %s", this.columnes, this.taula, this.condicio, this.groupby, this.orderby);
+        }
+    }
+
+    public static class SQLUpdateBuilder {
+        private String taula = "";
+        private String set = "";
+        private String condicio = "";
+
+        public SQLUpdateBuilder update(String taula) {
+            this.taula = taula;
+            return this;
+        }
+
+        public SQLUpdateBuilder set(String... valors) {
+            Map<String, String> sets = new HashMap<>();
+
+            for (int i = 0; i < valors.length; i += 2) { // Necessitem salts de 2 per separar les keys i els valors
+                sets.put(valors[i], valors[i + 1]);
+            }
+
+            boolean first = true;
+            for (Map.Entry<String, String> entry : sets.entrySet()) {
+                if (first) {
+                    set += "SET " + entry.getKey() + " = " + entry.getValue();
+                    first = false;
+                } else {
+                    set += ", " + entry.getKey() + " = " + entry.getValue();
+                }
+            }
+            return this;
+        }
+
+        public SQLUpdateBuilder where(String condicio) {
+            if (this.condicio.equals("")) {
+                this.condicio += "WHERE " + condicio;
+            }
+            else {
+                this.condicio += " AND " + condicio;
+            }
+            return this;
+        }
+
+        public String build() {
+            return String.format("UPDATE %s %s %s", this.taula, this.set, this.condicio);
         }
     }
 }
