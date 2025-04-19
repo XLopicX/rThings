@@ -19,13 +19,12 @@ public class rJDBC {
     public void connect() {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
-            DriverManager.getConnection(String.format("jdbc:oracle:thin:@//%s:%d//%s", this.hostname, this.port, this.SN), this.username, this.password);
+            this.con = DriverManager.getConnection(String.format("jdbc:oracle:thin:@//%s:%d/%s", this.hostname, this.port, this.SN), this.username, this.password);
         } catch (ClassNotFoundException e) {
             System.out.println("Driver not found " + e);
         }
         catch (SQLException e) {
             System.out.println("Credentials wrong? " + e);
         }
-
     }
 }
