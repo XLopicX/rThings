@@ -114,7 +114,12 @@ public class rJDBC {
             Map<String, String> sets = new HashMap<>();
 
             for (int i = 0; i < valors.length; i += 2) { // Necessitem salts de 2 per separar les keys i els valors
-                sets.put(valors[i], valors[i + 1]);
+                if (valors[i + 1].startsWith("SELECT") && valors[i + 1].contains("FROM"))  { // Tindria que ser suficient per a detectar si es una select dins un set
+                    sets.put(valors[i], String.format("(%s)", valors[i + 1]));
+                }
+                else {
+                    sets.put(valors[i], valors[i + 1]);
+                }
             }
 
             boolean first = true;

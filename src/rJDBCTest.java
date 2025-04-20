@@ -38,4 +38,22 @@ class rJDBCTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    @Order(2)
+    void update() {
+        String sentenciaSel = new rJDBC.SQLSelectBuilder()
+                .select("department_id")
+                .from("departments")
+                .where("department_name = 'Marketing'")
+                .build();
+
+        String sentenciaUpd = new rJDBC.SQLUpdateBuilder()
+                .update("employees")
+                .set("department_id", sentenciaSel)
+                .where("last_name = 'King'") // Rip brother (demoted)
+                .build();
+
+        assertDoesNotThrow(() -> db.update(sentenciaUpd));
+    }
 }
