@@ -192,29 +192,36 @@ public class rJDBC {
         }
     }
 
-    public static class SQLInsertBuilder { // todo; probablement fer servir hashmap pq la veritat es que tenir que fer servir tant insert com values esta raro
+    public static class SQLInsertBuilder {
         private String taula = "";
         private String columnes = "";
         private String valors = "";
         private String subquery = "";
 
-        public SQLInsertBuilder insert(String... columnes) {
-            this.columnes = String.join(",", columnes);
+        public SQLInsertBuilder insert(String... items) { // todo: fer servir hashmap amb 2n valor com a objecte per intentar veure si es possible acceptar diferents tipus i identificar'ho posteriorment al codi per fer el format
+            boolean first = true;
+
+            for (int i = 0; i < items.length; i+=2) { // Pq anirem pillant columnes i valors d'aqui els salts de 2
+                // Oracle es molt pussy i no accepta DD/MM/YYYY per tant ho adapto detectant amb un regex quan el user introdueix una data
+                if (items[i + 1].matches("'\\d{2}/\\d{2}/\\d{4}'")) {
+                    items[i + 1] = String.format("TO_DATE(%s, 'DD/MM/YYYY')", items[i + 1]); // no poso els '' a la data perque ja els portara
+                }
+                if (first) {
+                    this.columnes += items[i];
+                    this.valors += items[i + 1];
+                    first = false;
+                }
+                else {
+                    this.columnes += ", " + items[i];
+                    this.valors += ", " + items[i + 1];
+                }
+            }
+
             return this;
         }
 
         public SQLInsertBuilder into(String taula) { // All? what's that
             this.taula = taula;
-            return this;
-        }
-
-        public SQLInsertBuilder values(String... valors) {
-            for (int i = 0; i < valors.length; i++) { // Oracle es molt pussy i no accepta DD/MM/YYYY per tant ho adapto detectant amb un regex quan el user introdueix una data
-                if (valors[i].matches("'\\d{2}/\\d{2}/\\d{4}'")) {
-                    valors[i] = String.format("TO_DATE(%s, 'DD/MM/YYYY')", valors[i]); // no poso els '' a la data perque ja els portara
-                }
-            }
-            this.valors = String.join(",", valors);
             return this;
         }
 

@@ -18,7 +18,7 @@ class rJDBCTest {
 
     @Test
     @Order(1)
-    void select() {
+    void select() { // bad example lazy to make new one 3:
         String firstQuery = new rJDBC.SQLSelectBuilder()
                 .select("FIRST_NAME", "LAST_NAME")
                 .from("EMPLOYEES")
@@ -71,9 +71,20 @@ class rJDBCTest {
     @Order(4)
     void insert() {
         String sentenciaIns = new rJDBC.SQLInsertBuilder()
-                .insert("employee_id","first_name","last_name","email","phone_number","hire_date","job_id","salary","commission_pct","manager_id","department_id")
+                .insert(
+                        "employee_id", "100",
+                        "first_name", "'Steven'",
+                        "last_name", "'King'",
+                        "email", "'SKING'",
+                        "phone_number", "'515.123.4567'",
+                        "hire_date", "'17/06/1987'",
+                        "job_id", "'AD_PRES'",
+                        "salary", "24000",
+                        "commission_pct", "null",
+                        "manager_id", "null",
+                        "department_id", "90"
+                )
                 .into("employees")
-                .values("100","'Steven'","'King'","'SKING'","'515.123.4567'","'17/06/1987'","'AD_PRES'","24000","null","null","90") // Hired again??
                 .build();
 
         assertDoesNotThrow(() -> db.insert(sentenciaIns));
