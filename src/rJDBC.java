@@ -48,6 +48,24 @@ public class rJDBC {
         }
     }
 
+    public void delete(String query) { // codi repetit pero quedara mes net aixi
+        try {
+            Statement st = con.createStatement();
+            st.executeUpdate(query);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void insert(String query) { // codi repetit pero quedara mes net aixi
+        try {
+            Statement st = con.createStatement();
+            st.executeUpdate(query);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static class SQLSelectBuilder {
         private String columnes = "";
         private String taula = "";
@@ -146,6 +164,73 @@ public class rJDBC {
 
         public String build() {
             return String.format("UPDATE %s %s %s", this.taula, this.set, this.condicio);
+        }
+    }
+
+    public static class SQLDeleteBuilder {
+        private String taula = "";
+        private String condicio = "";
+
+        public SQLDeleteBuilder from(String taula) {
+            this.taula = taula;
+            return this;
+        }
+
+
+        public SQLDeleteBuilder where(String condicio) {
+            if (this.condicio.equals("")) {
+                this.condicio += "WHERE " + condicio;
+            }
+            else {
+                this.condicio += " AND " + condicio;
+            }
+            return this;
+        }
+
+        public String build() {
+            return String.format("DELETE FROM %s %s", this.taula, this.condicio);
+        }
+    }
+
+    public static class SQLInsertBuilder { // todo; probablement fer servir hashmap pq la veritat es que tenir que fer servir tant insert com values esta raro
+        private String taula = "";
+        private String columnes = "";
+        private String valors = "";
+        private String subquery = "";
+
+        public SQLInsertBuilder insert(String... columnes) {
+            this.columnes = String.join(",", columnes);
+            return this;
+        }
+
+        public SQLInsertBuilder into(String taula) { // All? what's that
+            this.taula = taula;
+            return this;
+        }
+
+        public SQLInsertBuilder values(String... valors) {
+            for (int i = 0; i < valors.length; i++) { // Oracle es molt pussy i no accepta DD/MM/YYYY per tant ho adapto detectant amb un regex quan el user introdueix una data
+                if (valors[i].matches("'\\d{2}/\\d{2}/\\d{4}'")) {
+                    valors[i] = String.format("TO_DATE(%s, 'DD/MM/YYYY')", valors[i]); // no poso els '' a la data perque ja els portara
+                }
+            }
+            this.valors = String.join(",", valors);
+            return this;
+        }
+
+        public SQLInsertBuilder subquery(String subquery) { // Probablement no vols fer servir aixo pq ni ho he provat. lol
+            this.subquery = subquery;
+            return this;
+        }
+
+        public String build() {
+            if (this.subquery.isEmpty()) {
+                return String.format("INSERT INTO %s (%s) VALUES (%s)", this.taula, this.columnes, this.valors);
+            }
+            else {
+                return String.format("INSERT INTO %s (%s) %s", this.taula, this.columnes, this.subquery);
+            }
+
         }
     }
 }

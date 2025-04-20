@@ -1,6 +1,5 @@
 import org.junit.jupiter.api.*;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -10,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class rJDBCTest {
     static rDotEnv dotenv = new rDotEnv(".env");
-    static rJDBC db = new rJDBC(dotenv.get("host"), Integer.parseInt(dotenv.get("port")), dotenv.get("sn"), dotenv.get("user"), dotenv.get("pass"));
+    static rJDBC db = new rJDBC(dotenv.get("host"), Integer.parseInt(dotenv.get("port")), dotenv.get("sn"), dotenv.get("user"), dotenv.get("pass")); // La base de dades per aquestes probes es la de les docs de oracle.
 
     @BeforeAll
     static void connect() {
@@ -55,5 +54,28 @@ class rJDBCTest {
                 .build();
 
         assertDoesNotThrow(() -> db.update(sentenciaUpd));
+    }
+
+    @Test
+    @Order(3)
+    void delete() {
+        String sentenciaDel = new rJDBC.SQLDeleteBuilder()
+                .from("employees")
+                .where("employee_id = 100") // Bro really fucked up this time
+                .build();
+
+        assertDoesNotThrow(() -> db.delete(sentenciaDel));
+    }
+
+    @Test
+    @Order(4)
+    void insert() {
+        String sentenciaIns = new rJDBC.SQLInsertBuilder()
+                .insert("employee_id","first_name","last_name","email","phone_number","hire_date","job_id","salary","commission_pct","manager_id","department_id")
+                .into("employees")
+                .values("100","'Steven'","'King'","'SKING'","'515.123.4567'","'17/06/1987'","'AD_PRES'","24000","null","null","90") // Hired again??
+                .build();
+
+        assertDoesNotThrow(() -> db.insert(sentenciaIns));
     }
 }
